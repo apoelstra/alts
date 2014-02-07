@@ -1,0 +1,208 @@
+% Default course lecture note template by asp 
+\documentclass[letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage[top=3cm, bottom=3cm, left=3.85cm, right=3.85cm]{geometry}
+\usepackage[onehalfspacing]{setspace}
+\usepackage{amsmath,amssymb,wasysym,amsthm}
+\usepackage{graphicx}
+\usepackage{mathptmx}
+\usepackage[usenames,dvipsnames]{color}
+
+\title{A Treatise on Altcoins}
+\author{Andrew Poelstra}
+\date{9 Jan 2014}
+
+\begin{document}
+
+\maketitle
+
+\section{Preamble}
+
+Why am I writing this document? Because when I first entered the
+world of cryptography, there were certain common-sense maxims which
+were passed around such as \emph{to design a cryptosystem, you must
+first think like a cryptanalyst} or \emph{anybody can make a cryptosystem
+which they themselves cannot break}. For most people, these maxims
+could be summarized simply as \emph{don't roll your own crypto}. Anyone
+who flouted this golden rule, without decades of schooling and experience,
+was rightly dismissed as a crank or a troll.
+
+Of course, there were a few people who didn't subscribe, and they would
+spend years repeating their half-baked ideas, conspiracy theories, factoring
+algorithms and NSA-proof cryptography on \texttt{sci.crypt}. These people
+were often ridiculed but just as often sincerely advised to seek mental help.
+I hope for their sake that some of them have since done so. At no point were
+their ideas taken seriously, used, or, god forbid, invested in.
+
+However, shortly after the turn of the 21st century, Adam Back discovered
+a novel type of cryptography called \emph{proof-of-work} which enabled a
+\emph{distributed consensus}
+cryptosystem. This cryptosystem was used in 2009 by Satoshi Nakomoto to
+develop the first decentralized \emph{cryptocurrency} --- Bitcoin --- which
+was also the first experimental cryptosystem to see billions of dollars
+poured into it by people who had no understanding of its mechanisms.
+
+By that time, the benefits of doing cryptography in the open had long
+since been made clear, so Bitcoin's reference implementation was fully
+open-sourced. This allowed anybody to see the code, and anybody to fork
+it to develop their own cryptosystems. Of course, ``developing your own
+cryptosystem'' is the purview of only cranks and researchers, so it was
+reasonably assumed that none of these ``altcoins'', as they were called,
+could ever be plausibly presented for public use.
+
+Boy, were we ever wrong on that one.
+
+The purpose of this document is twofold:
+\begin{enumerate}
+\item If you are a member of the public interested in cryptocurrencies,
+this document discusses what cryptocurrencies, and cryptosystems in general,
+are. It discusses the miracles and dangers of modern cryptography, and
+the serious risks associated with cryptosystem-tweaking by unqualified
+(and even qualified!) people.
+
+Since Bitcoin has introduced direct monetary value to new cryptosystems,
+it is not only cranks doing stupid things with it, but also liars and
+thieves. This document also discusses that side of altcoin development.
+\item If you are, or are planning to, develop and release an ``altcoin''
+to the public, this document reminds you that you are playing with fire.
+This sort of behavior was cute on \texttt{sci.crypt}, a community populated
+mainly by cryptographic experts where there was no risk that your charlatanism
+would be mistaken for anything legitimate, and where there was no ability to
+store value in your scheme anyway.
+
+The Bitcoin community differs in both those respects. Your crankery is
+not cute. You are not a cryptographer, and yet are releasing a homebrew
+cryptosystem, misrepresenting your own qualifications, and encouraging
+others to store value in your creation. These actions are incompetent,
+dishonest and reprehensibly dangerous.
+
+If somehow you are doing this through honest cluelessness, I dream that
+you'll read this article and realize the error of your ways.
+\end{enumerate}
+
+\section{What are cryptosystems?}
+
+Modern cryptography, as a field, studies the ability and techniques of
+controlling information flows independently of containing data flow.
+For example, using public-key cryptography it is possible to broadcast
+data such that the information contained is only accessible to a single
+person.
+
+Until the advent of modern cryptography, philosophical questions, such
+as ``where'' the information actually is, were considered just that:
+philosophical questions. Intuitively, if you write some information
+down, it's right there on the page in front of you, available to anybody
+who can read it. In light of this intuition, it is something of a miracle
+that modern cryptography should be able to exist at all. And given that
+we evolved this intuition which has served us perfectly well until very
+recently, it should be expected that modern cryptography is an extremely
+subtle and perilous practice. Indeed, this is the case.
+
+This cryptographic idea of ``separating information flow from data flow''
+can be put on good mathematical footing, and much progress has been made
+in this direction \footnote{See, for example, Shafi Goldwasser and Silvio
+Micali, Probabilistic Encryption, Special issue of Journal of Computer and
+Systems Sciences, Vol. 28, No. 2, pages 270-299, April 1984. Available online.},
+though there are still many fundamental open problems\footnote{For example,
+functions such as \texttt{SHA256d} which are easy to calculate but hard to
+invert are called \emph{one-way functions}. However, \texttt{SHA256d} is
+merely assumed to be one-way, but no proof has been found --- in fact, no
+proof has been found that \emph{any} one-way functions exist!}. By reading
+papers in this field, one gets a sense for the difficulty of making
+concrete statements about such subtle concepts, and for the precision
+with which one's assumptions must be made.
+
+A \emph{cryptosystem} is a collection of algorithms which work together
+to achieve some cryptographic goal. A typical cryptosystem consists of
+three algorithms: key generation, encryption, and decryption. Cryptosystems
+are typically published alongside security proofs which reduce the problem
+of ``breaking'' the cryptosystem (e.g. learning some bits of the input to
+the encryption algorithm from its output) to some ``hard'' mathematical
+problem such as finding a discrete logarithm of an elliptic curve group
+element. These proofs are intricate, subtle, and their relation to reality
+is a subject of intense controversy\footnote{See Alexander Dent, Fundamental
+Problems in Provable Security and Cryptography, retrieved from the IACR
+preprint archive, 2006. \texttt{http://eprint.iacr.org/2006/278.pdf}}. An
+important thing to note is that these proofs also consider the cryptosystem
+as a whole: change one algorithm even slightly, and the security proof of
+another algorithm could be completely invalidated.
+
+Nonetheless, we interact daily with many cryptosystems, most of which we
+do not even think about. We assume the security of these systems partially
+because there is legal recourse if they are broken, partially because this
+is the way that we've always done things, and it seems like security breaches
+are reasonably uncommon, and partially because we assume that very smart people
+designed these systems to be hard to break. After all, there's a lot of money
+riding on them.
+
+Of course, even if these things are true about the cryptosystems we use to
+check our email, do our banking, buy groceries and store private data, there
+is no reason to believe in them for novel cryptosystems designed by anonymous
+people to do unprecedented things. This is largely responsible for the ``crank''
+label assigned to so many pointless projects on \texttt{sci.crypt}.
+
+\section{What are cryptocurrencies?}
+
+A \emph{cryptocurrency} is a cryptosystem designed to facilitate the transfer
+of value, by transferring scarce goods defined within the system itself. The
+prototypical example is Bitcoin, which transfers signing authority and maintains
+a global ledger of value associated to this authority. The primary innovation
+of Bitcoin was the creation of this ledger, which is updated and verified in
+a completely decentralized fashion, with all parties agreeing on the atomicity
+of transactions and their ordering in time.
+
+Out of necessity, cryptocurrencies are enormous cryptosystems and contain many
+smaller cryptosystems as components. This makes them fearsomely complex, and
+their security correspondingly difficult to verify, but the fact that Bitcoin
+has held up for over five years gives evidence that this complexity can be
+managed.
+
+Adding to the complexity of the cryptosystem itself is the fact that exchanging
+value necessarily involves economic considerations. Therefore cryptocurrencies
+must be analyzed not only for computational soundness and security, but also
+for \emph{economic} soundness and security. That is, is the cryptocurrency
+designed so that the incentives are aligned with the goal of security the system,
+and \emph{not} with the goal of undermining it?
+
+To illustrate the complexity of Bitcoin, and to give an overview of its
+workings (which we will cover in detail later), we have broken the cryptosystem
+down into its constituent algorithms. Such a breaking-down is necessarily
+subjective and gives an incomplete view of the system\footnote{Robert Pirsig,
+Zen and the Art of Motorcycle Maintenance, 1974}, but is didactically necessary.
+
+[TODO fix this list]
+\begin{enumerate}
+\item Chainstate determination.
+\item Block verification.
+\item Transaction generation.
+\item Script execution / verification.
+\item Blockchain extension and block creation.
+\end{enumerate}
+It is important to emphasize that this is \emph{one cryptosystem} and the
+security (economic and computational) of every component is tied to that
+of every other. Therefore, anyone hoping to change a single component must
+understand the entire system and have the technical background to analyse
+and implement the change.
+
+\section{Cryptography is hard.}
+
+[tell stories about serious cryptosystems broken in weird ways, eg TLS 1.0 side-channel attack]
+
+\section{Cryptography of Bitcoin 1: transactions and signatures.}
+
+[explain how transactions, scripts, signatures work]
+[list stupid shit alts have done to these things and how they're stupid]
+
+\section{Cryptography of Bitcoin 2: distributed consensus.}
+
+[explain distributed consensus works, risk of forks, incentive issues, etc]
+[list stupid shit alts have done to these things and how they're stupid]
+
+\section{Conclusion.}
+
+\end{document}
+
+
+
