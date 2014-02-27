@@ -168,23 +168,82 @@ and \emph{not} with the goal of undermining it?
 
 To illustrate the complexity of Bitcoin, and to give an overview of its
 workings (which we will cover in detail later), we have broken the cryptosystem
-down into its constituent algorithms. Such a breaking-down is necessarily
-subjective and gives an incomplete view of the system\footnote{Robert Pirsig,
-Zen and the Art of Motorcycle Maintenance, 1974}, but is didactically necessary.
+down into its constituent algorithms. The cryptosystem in its entirety is
+run by every validating ``full'' node on the network. We assume the existence
+of a communications network by which nodes are able to exchange data. (In
+practice, Bitcoin nodes use a peer-to-peer network, and communicate by the
+``Bitcoin protocol''.)
 
-[TODO fix this list]
-\begin{enumerate}
-\item Chainstate determination.
-\item Block verification.
-\item Transaction generation.
-\item Script execution / verification.
-\item Blockchain extension and block creation.
-\end{enumerate}
+Such a breaking-down is necessarily subjective and gives an incomplete view
+of the system\footnote{Robert Pirsig, Zen and the Art of Motorcycle Maintenance,
+1974}, but is didactically necessary.
 It is important to emphasize that this is \emph{one cryptosystem} and the
 security (economic and computational) of every component is tied to that
 of every other. Therefore, anyone hoping to change a single component must
 understand the entire system and have the technical background to analyse
 and implement the change.
+
+We now give an overview of each component of Bitcoin, leaving detailed
+cryptographic discussion to future sections.
+
+\paragraph{Setup.} When a Bitcoin node is first started it creates two
+data structures, a weighted hash tree called the \emph{blockchain} and
+a database called the \emph{utxo set}, both of which are initially empty.
+Elements of the blockchain are called \emph{blocks}; elements of the
+utxo set are called \emph{utxos} or \emph{unsigned transaction outputs}.
+The motivation for these terms will become clear.
+
+It then contacts another node to request the highest-weighted path in
+its blockchain. For each block in this path (which must start with the
+so-called \emph{genesis block} whose hash is hardcoded into the node),
+the node runs its Block Verification algorithm, which updates its
+chainstate.
+
+\paragraph{Relay.} Each time a node sees a transaction on the network,
+it runs its Transaction Verification algorithm. If this passes, the
+node passes the transaction to each of its peers (after a small delay,
+to prevent flooding attacks).
+
+Similarly, each time a node sees a block on the network, it runs its
+Block Verification algorithm. If this passes, and if the new block is
+part of the highest-weight blockchain path, the node passes the block
+to each of its peers.
+
+\paragraph{Transaction Verification.} At its heart, a Bitcoin transaction
+is composed of two main parts: the inputs and the outputs. As the inputs
+refer to the outputs of other transactions, we cover them first.
+
+Both inputs and outputs are constructed from \emph{scripts}, which are
+instructions in a Bitcoin-specific stack-based programming language.
+This language is very small and does not support looping, so that it
+can be consistently implemented and easily audited.
+ 
+Outputs are fairly simple: they consist of (a) a value, which is the
+number of Bitcoins the output represents, and (b) a script which reads
+values from the stack then either passes or fails. A typical script
+might expect the stack to contain a digital signature, for example.
+All that is needed to validate outputs is that their scripts use the
+defined script opcodes.
+
+Inputs are more intricate: they consist of (a) a reference to an output
+of an existing transaction and (b) a script which places values on the
+stack. To validate an input, it is first checked that the referenced
+transaction output has not been spent, \emph{i.e.} it appears in the
+utxo set. Then that output's script is concatenated to the input's
+script, and the concatenated script is run. If the script accepts,
+the transaction is valid.
+
+Further, the total value of outputs must be greater than or equal to
+the total value of the inputs (input values are defined as the values
+of their referenced outputs). If the output total is strictly greater
+than the input total, the difference is called a \emph{transaction fee}
+and is recaptured by the network.
+
+\paragraph{Transaction Generation.} 
+
+\paragraph{Block Verification.}
+
+\paragraph{Block Generation.}
 
 \section{Cryptography is hard.}
 
