@@ -167,7 +167,8 @@ designed so that the incentives are aligned with the goal of security the system
 and \emph{not} with the goal of undermining it?
 
 To illustrate the complexity of Bitcoin, and to give an overview of its
-workings (which we will cover in detail later), we have broken the cryptosystem
+workings (which we will cover in more detail in Sections \ref{txes} and
+\ref{consensus}), we have broken the cryptosystem
 down into its constituent algorithms. The cryptosystem in its entirety is
 run by every validating ``full'' node on the network. We assume the existence
 of a communications network by which nodes are able to exchange data. (In
@@ -209,6 +210,13 @@ Block Verification algorithm. If this passes, and if the new block is
 part of the highest-weight blockchain path, the node passes the block
 to each of its peers.
 
+\paragraph{Script Evaluation.} Internal to Bitcoin is a stack-based
+scripting language. It has the capacity to push and pop data, branch
+on simple conditions, and also execute some cryptographic primitives.
+
+(TODO: describe script in some detail. At least cover CHECKSIG.)
+
+
 \paragraph{Transaction Verification.} At its heart, a Bitcoin transaction
 is composed of two main parts: the inputs and the outputs. As the inputs
 refer to the outputs of other transactions, we cover them first.
@@ -230,8 +238,8 @@ of an existing transaction and (b) a script which places values on the
 stack. To validate an input, it is first checked that the referenced
 transaction output has not been spent, \emph{i.e.} it appears in the
 utxo set. Then that output's script is concatenated to the input's
-script, and the concatenated script is run. If the script accepts,
-the transaction is valid.
+script, and the concatenated script is run using the Script Evaluation
+algorithm. If the algorithm accepts, the transaction is valid.
 
 Further, the total value of outputs must be greater than or equal to
 the total value of the inputs (input values are defined as the values
@@ -239,22 +247,88 @@ of their referenced outputs). If the output total is strictly greater
 than the input total, the difference is called a \emph{transaction fee}
 and is recaptured by the network.
 
-\paragraph{Transaction Generation.} 
+There is one exception to this last rule for so-called \emph{coinbase
+transactions}. These are special transactions which occur once in each
+block and may be created with no inputs at all. They are the mechanism
+by which new Bitcoins are brought into circulation. The total output
+size must be less than or equal to the \emph{block reward} plus the
+total network fees for all other transactions in the block.
 
-\paragraph{Block Verification.}
+\paragraph{Transaction Generation.} To create a transaction, a node
+selects outputs from its utxo set which it has the capacity to spend
+(for example, outputs whose scripts expect a digital signature, and
+the node is in possession of the requisite key.) It chooses enough
+outputs so that their total value is greater than or equal to the
+amount desired to spend.
 
-\paragraph{Block Generation.}
+It then creates new outputs which the transaction's recipient has
+the capacity to spend (typically this requires contacting the recipient
+through another channel, \emph{e.g.} to obtain the hash of a public
+key for which the recipient has the corresponding private key), and
+sets their values so that the total is equal to the amount desired
+to spend.
+
+Any discrepancy between the total input value and total output value
+is considered as a network fee. To reduce this, the node may add an
+additional ``change'' output, which it has the capacity to spend itself.
+
+\paragraph{Block Verification.} To verify a block, the Bitcoin node
+first checks that it is formed correctly and that the correct hash of
+its contents is in its header. It also checks that the hash of the
+block is within a small range --- the exact range is calculated by
+observing the timestamps of the block's ancestors and attempting to
+adjust so that future blocks will be created roughly every ten minutes.
+See the Block Generation algorithm for more details about this. 
+
+It then runs the Transaction Verification algorithm on every transaction
+in the block, and if any of them fail, the block is invalid.
+
+It is crucial to the Bitcoin cryptosystem that all nodes agree on the
+result of the Block Verification algorithm --- and by extension, that
+all nodes agree on Transaction Verification, Script Evaluation, and
+Difficulty Calculation. That is, these algorithms are \emph{consensus
+algorithms}. More about this will be discussed in Section \ref{consensus}.
+
+The block is weighted in the blockchain according to its difficulty.
+
+\paragraph{Block Generation.} Unlike the previous algorithms, Block
+Generation is not done by most Bitcoin nodes, since it is designed to
+be very computationally expensive. Today it requires special-purpose
+hardware to be feasible.
+
+To create a block, a node assembles a list of transactions, which are
+obtained through the Bitcoin network and all pass the Transaction
+Verification algorithm. The node also creates a coinbase transaction,
+which has no inputs and whose outputs can be spent by the node itself.
+
+These transactions are hashed up, and the resulting hash is put
+alongside a timestamp and nonce in the \emph{block header}. In order
+that the new block pass the Block Verification algorithm, its hash must
+fall into a small range defined by the Difficulty Calculation algorithm.
+To accomplish this, the block is hashed \emph{ad nauseum} for different
+values of the nonce until a hash is found which falls into the required
+range. This computation is called a \emph{proof of work}, and Bitcoin's
+security depends on it satisfying several subtle mathematical properties,
+which will be discussed in Section \ref{consensus}.
+
+\paragraph{Difficulty Calculation.}
+(TODO: discuss difficulty and this range calculation properly)
+
+Basically, if blocks' timestamps are too close together then the difficulty
+increases, meaning that the range of valid hashes shrinks. Conversely if
+blocks are too far apart the range grows. The result is a negative feedback
+loop designed to cause blocks to appear every ten minutes on average.
 
 \section{Cryptography is hard.}
 
 [tell stories about serious cryptosystems broken in weird ways, eg TLS 1.0 side-channel attack]
 
-\section{Cryptography of Bitcoin 1: transactions and signatures.}
+\section{Cryptography of Bitcoin 1: transactions and signatures. \label{txes}}
 
 [explain how transactions, scripts, signatures work]
 [list stupid shit alts have done to these things and how they're stupid]
 
-\section{Cryptography of Bitcoin 2: distributed consensus.}
+\section{Cryptography of Bitcoin 2: distributed consensus.\label{consensus}}
 
 [explain distributed consensus works, risk of forks, incentive issues, etc]
 [list stupid shit alts have done to these things and how they're stupid]
