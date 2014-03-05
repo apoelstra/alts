@@ -325,13 +325,58 @@ loop designed to cause blocks to appear every ten minutes on average.
 
 \section{Cryptography of Bitcoin 1: transactions and signatures. \label{txes}}
 
-[explain how transactions, scripts, signatures work]
-[list stupid shit alts have done to these things and how they're stupid]
+[explain transactions and signatures, CHECKSIG etc]
+[explore dangerous/bad ideas]
+\begin{itemize}
+\item Turing completeness, script expressiveness
+\item Extrospection
+\end{itemize}
 
 \section{Cryptography of Bitcoin 2: distributed consensus.\label{consensus}}
 
 [explain distributed consensus works, risk of forks, incentive issues, etc]
-[list stupid shit alts have done to these things and how they're stupid]
+[explore dangerous/bad ideas]
+\begin{itemize}
+\item Dependence on architecture (type width, floating point)
+\item Speed and clamping of difficulty changes
+\item Verification versus search speed for PoW
+\item PoW with different hardware requirements
+\item Block frequency and size
+\item Proof of stake
+\item Update management (dogecoin's fork, lack of broadcast keys, etc)
+\end{itemize}
+
+\section{Where do I go from here?}
+
+I hope this document has provided some perspective on the intellectual
+magnitude of tackling cryptographic projects. Even experts shy away from
+developing new cryptosystems, preferring to use tried and true cryptographic
+primitives which have withstood the test of time and been analysed in depth
+by thousands of people. However, there are many open problems and exciting
+research directions in cryptography and the field is remarkably accessible
+to those willing to invest a few years into learning its history.
+
+As a start, several active and famous cryptographers maintains blogs devoted
+to presenting cryptographic ideas in accessible ways. Of particular interest
+are those of Matthew Green and Bruce Schneier. Also current academic research
+is typically posted to the preprint archive at \texttt{eprint.iacr.org}. It
+is helpful to skim the abstracts periodically, both to find interesting papers
+and to get an idea of current trends in cryptographic research.
+
+For an historical account from ancient times through World War II, read
+David Kahn's tome \emph{The Codebreakers}. This is a very long text, but an
+enjoyable and engaging read.
+
+Regarding modern cryptography, many classic papers are available online. An
+incomplete and unordered list of essential reading is:
+\begin{itemize}
+\item \emph{Probabilistic Encryption}, Goldwasser and Micali, 1984.
+\item \emph{A Public-Key Cryptosystem and a Signature Scheme Based on Discrete Logarithms}, ElGamal, 1985.
+\item \emph{The Decision Diffie–Hellman Problem}, Boneh, 1998.
+\item \emph{How to Prove Yourself: Practical Solutions to Identification and Signature Problems}, Fiat and Shamir, 1986.
+\end{itemize}
+It is also worthwhile to read the Wikipedia article on zero-knowledge proofs,
+which has plenty of citations, but is more clearly written than any of them \smiley.
 
 \section{Conclusion.}
 
