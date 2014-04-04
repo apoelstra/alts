@@ -122,7 +122,7 @@ of ``breaking'' the cryptosystem (e.g. learning some bits of the input to
 the encryption algorithm from its output) to some ``hard'' mathematical
 problem such as finding a discrete logarithm of an elliptic curve group
 element. These proofs are intricate, subtle, and their relation to reality
-is a subject of intense controversy\footnote{See Alexander Dent, Fundamental
+is a subject of intense controversy\footnote{Alexander Dent, Fundamental
 Problems in Provable Security and Cryptography, retrieved from the IACR
 preprint archive, 2006. \texttt{http://eprint.iacr.org/2006/278.pdf}}. An
 important thing to note is that these proofs also consider the cryptosystem
@@ -191,7 +191,7 @@ cryptographic discussion to future sections.
 data structures, a weighted hash tree called the \emph{blockchain} and
 a database called the \emph{utxo set}, both of which are initially empty.
 Elements of the blockchain are called \emph{blocks}; elements of the
-utxo set are called \emph{utxos} or \emph{unsigned transaction outputs}.
+utxo set are called \emph{utxos} or \emph{unspent transaction outputs}.
 The motivation for these terms will become clear.
 
 It then contacts another node to request the highest-weighted path in
@@ -243,8 +243,8 @@ algorithm. If the algorithm accepts, the transaction is valid.
 
 Further, the total value of outputs must be greater than or equal to
 the total value of the inputs (input values are defined as the values
-of their referenced outputs). If the output total is strictly greater
-than the input total, the difference is called a \emph{transaction fee}
+of their referenced outputs). If the input total is strictly greater
+than the output total, the difference is called a \emph{transaction fee}
 and is recaptured by the network.
 
 There is one exception to this last rule for so-called \emph{coinbase
@@ -325,6 +325,18 @@ loop designed to cause blocks to appear every ten minutes on average.
 
 \section{Cryptography of Bitcoin 1: transactions and signatures. \label{txes}}
 
+Bitcoin transactions conceptually work as follows: to spend a Bitcoin, you
+digitally sign a message that contains (a) the amount to be spent, and (b)
+a public key of the recipient. Then when the recipient wants to spend money,
+he has to provide a reference to the transaction that gave it to him, and
+sign a new message with the key from that transaction.
+
+As discussed above, the actual implementation is more involved in order to
+support splitting up balances, controlling what data is signed, etc. And
+because financial contracts are often more complex than ``the money of
+party $X$ now belongs to party $Y$'', Bitcoin's signature algorithm actually
+contains a simple scripting language
+
 [explain transactions and signatures, CHECKSIG etc]
 [explore dangerous/bad ideas]
 \begin{itemize}
@@ -333,6 +345,24 @@ loop designed to cause blocks to appear every ten minutes on average.
 \end{itemize}
 
 \section{Cryptography of Bitcoin 2: distributed consensus.\label{consensus}}
+
+More than anything else, Bitcoin is a distributed consensus system. This
+means that it is composed of many disparate systems, each of which may
+leave or join at any time, who need to come to consensus on the chainstate.
+The way that Bitcoin accomplishes this is by a hash-based proof of
+work\footnote{Bitcoin's proof-of-work was invented by Adam Back as part
+of Hashcash, a precursor to Bitcoin. See Adam Back, \emph{Hashcash - A Denial
+of Service Counter-Measure}, technical report, August 2002.}. It is not
+clear whether this mechanism is a viable way to achieve distributed consensus
+in a decentralized way --- indeed, even the most na\"ive analysis involves
+economic incentive analysis, hardly a standard component of cryptographic
+proof --- but Bitcoin has been operating in a somewhat decentralized
+fashion for over five years, and this gives us hope.
+
+Having said that, distributed consensus systems have new and catastrophic
+failure modes which do not exist in ordinary systems. Even the simple-minded
+changes made to Bitcoin by typical alt-currencies have been enough to
+trigger these failure modes.
 
 [explain distributed consensus works, risk of forks, incentive issues, etc]
 [explore dangerous/bad ideas]
@@ -343,7 +373,7 @@ loop designed to cause blocks to appear every ten minutes on average.
 \item PoW with different hardware requirements
 \item Block frequency and size
 \item Proof of stake
-\item Update management (dogecoin's fork, lack of broadcast keys, etc)
+\item Update management (dogecoin's unplanned fork, lack of broadcast keys, etc)
 \end{itemize}
 
 \section{Where do I go from here?}
