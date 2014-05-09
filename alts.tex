@@ -8,11 +8,12 @@
 \usepackage{amsmath,amssymb,wasysym,amsthm}
 \usepackage{graphicx}
 \usepackage{mathptmx}
+\usepackage{hyperref}
 \usepackage[usenames,dvipsnames]{color}
 
 \title{A Treatise on Altcoins}
 \author{Andrew Poelstra}
-\date{9 Jan 2014}
+\date{Last update: 8 May 2014}
 
 \begin{document}
 
@@ -124,7 +125,7 @@ problem such as finding a discrete logarithm of an elliptic curve group
 element. These proofs are intricate, subtle, and their relation to reality
 is a subject of intense controversy\footnote{Alexander Dent, Fundamental
 Problems in Provable Security and Cryptography, retrieved from the IACR
-preprint archive, 2006. \texttt{http://eprint.iacr.org/2006/278.pdf}}. An
+preprint archive, 2006. \url{http://eprint.iacr.org/2006/278.pdf}}. An
 important thing to note is that these proofs also consider the cryptosystem
 as a whole: change one algorithm even slightly, and the security proof of
 another algorithm could be completely invalidated.
@@ -210,12 +211,36 @@ Block Verification algorithm. If this passes, and if the new block is
 part of the highest-weight blockchain path, the node passes the block
 to each of its peers.
 
-\paragraph{Script Evaluation.} Internal to Bitcoin is a stack-based
-scripting language. It has the capacity to push and pop data, branch
-on simple conditions, and also execute some cryptographic primitives.
+\paragraph{Signature (Script) Evaluation.} Since Bitcoin transactions
+transfer value, a basic requirement for a transaction to be valid is
+that the previous owner of the coins has signed off on the transfer.
+So-called \emph{digital signatures} are well-studied cryptographic
+primitives, and typically consist of a cryptographic proof that the
+holder of the private half of some keypair has manipulated a message
+in some distinctive and easily-verified way.
 
-(TODO: describe script in some detail. At least cover CHECKSIG.)
+Since Bitcoin transcations are financial transactions, which are often
+executions of more complicated contracts than ``the sole owner of some
+coin signed off on this spend''. Therefore Bitcoin's signature system
+contains an expressive stack-based scripting language. Often Bitcoin's
+script is assessed as though it were a programming language; however,
+its cryptographic function is to be a digital signature scheme, and
+therefore its most essential attributes are that script-based signatures
+are publically verifiable and existentially unforgeable\footnote{Actually,
+Bitcoin's script is expressible enough to produce signatures which can
+be forged with varying degrees of ease; an extreme example would be a
+transactions whose outputs can be spent by anybody at all. On the other
+hand, pay-to-address transactions should have outputs which are unspendable
+except by the target address's owner.  So ``existential unforgeability''
+is not quite the correct security requirement for Bitcoin signatures.
+There is something more subtle here.}
 
+This language has the capacity to push and pop data, branch on simple
+conditions, and also execute some traditional cryptographic primitives.
+Simple Bitcoin transactions may be little more than thin wrappers around
+these primitives; for example, traditional ``pay-to-address'' transactions
+check (a) that a transaction is signed by a traditional ECDSA signature,
+and (b) that the correct address can be derived from signature's key.
 
 \paragraph{Transaction Verification.} At its heart, a Bitcoin transaction
 is composed of two main parts: the inputs and the outputs. As the inputs
@@ -312,15 +337,86 @@ security depends on it satisfying several subtle mathematical properties,
 which will be discussed in Section \ref{consensus}.
 
 \paragraph{Difficulty Calculation.}
-(TODO: discuss difficulty and this range calculation properly)
 
-Basically, if blocks' timestamps are too close together then the difficulty
-increases, meaning that the range of valid hashes shrinks. Conversely if
-blocks are too far apart the range grows. The result is a negative feedback
-loop designed to cause blocks to appear every ten minutes on average.
+There are two reasons that Bitcoin blocks are accompanied by a proof-of-work.
+One is to create an opportunity cost for extending the blockchain, forcing
+would-be attackers to commit to a single branch of the chain. The other is
+to slow the pace of blockchain extensions so that the entire network can be
+made aware of each block before it is extended. The proof-of-work also provides
+a natural way to weight the each block, so that for every path in the blockchain
+one can compute the ``total work''. The higher the total work of a path, the more
+participants are (statistically) required to participate to create it, and
+therefore ``highest total work'' is a proxy both for ``known to the most
+people''\footnote{Pieter Wuille pointed out to me that since the hashpower of
+the Bitcoin network has increased by many orders of magnitudes, it is only a
+high \emph{recent} total work that can be used as a proxy for visibility. For
+example, a modern ASIC miner could easily outdo the total work of the first
+200k Bitcoin blocks without publishing anything. On the other hand, the timescale
+on which hashpower changes by orders of magnitude is much larger than the timescale
+at which we assume the network is synchronous, so by the time an attacker is able
+to individually out-work a path, that path will have been extended beyond his reach
+and the extension will already by globally visible. Therefore by the time a
+difference between the visibility implied by total work and that implied by recent
+total work develops, that difference is long since irrelevant.}
+and ``hardest to forge''. For these reasons, Bitcoin nodes are able to
+achieve a distributed consensus on the ``real'' blockchain by considering
+reality to be synonymous with greatest total work\footnote{This exposition of
+the function of proof-of-work is far from being a scientific consensus. What
+is agreed on is that there are mathematical proofs that cryptographically-enforced
+distributed consensus is impossible, and that Bitcoin evades these impossibility
+results by introducing economic concepts such as opportunity costs. It is far
+from clear what the correct formalization of the security (including forces
+against censorship and centralization) properties required of a proof-of-work
+are, and whether Bitcoin's proof-of-work achieves those goals. For more information
+see Andrew Miller's recent work.}.
+
+(Since blockchain paths intrinsically order their contained blocks, consensus on
+the blockchain immediately gives rise to consensus on transaction ordering,
+which is what Bitcoin actually needs to resolve double-spend incidents consistently.)
+
+To keep the blockrate low enough that the network has time to achieve consensus,
+while high enough to facilitate transactions at a useful pace, Bitcoin attempts
+to produce blocks on average every ten minutes. It accomplishes this by a negative
+feedback loop between the blocktimes (as encoded in the blocks themselves, which
+are manipulable by dishonest miners) and the block difficulty.
+
+As described in Section \ref{consensus}, Bitcoin's proof-of-work scheme is that
+of Adam Back's HashCash, and works by requiring the \texttt{SHA256d } hash of
+valid blocks' headers to lie within a small range. The difficulty parameter is
+inversely proportional to the size of this range, and assuming that \texttt{SHA256d}
+values are uniformly random\footnote{This is the so-called \emph{random-oracle
+assumption} on the hash function, which is that a hash function can be modeled
+by a mathematically random function. This is physically impossible since the
+Komolgorov complexity of a true random function would be infinite while that
+of \texttt{SHA256d} is comparatively very small. But it's an empirical fact
+that nobody has found a computationally feasible to skew the \texttt{SHA256d}'s
+output distribution away from uniform.}, the size of this range is directly
+proportional to the probability that any given block will be valid. Miners
+churn through the space of possible block headers by incrementing a nonce,
+so that between any two valid blocks, miners may have collectively churned
+through many quadrillion invalid ones.
+
+The short version of the above: if blocks' timestamps are too close together
+then the difficulty increases, meaning that the range of valid hashes shrinks.
+Conversely, if blocks are too far apart the range grows. The result is a
+negative feedback loop designed to cause blocks to appear every ten minutes
+on average.
 
 \section{Cryptography is hard.}
 
+In this section we will step away from the specifics of cryptocurrencies and
+look at cryptography in general. Modern cryptography is an exciting but
+extremely subtle field. Theoretical cryptography sits at the intersection
+of computing science, algebra, statistics, physics and philosophy, while
+applied cryptography involves all of the above in addition to software
+engineering, electrical engineering, social science and economics\footnote{Not
+to mention the revolutionary historical and political implications of the
+\emph{use} of cryptography; there is much to be said about these aspects of
+Bitcoin, which we will try to avoid for the purposes of this text.}
+
+[tell stories about ``obviously'' amateur cryptosystems, e.g. altoz, as well
+as non-obviously amateur ones, e.g. etherium's encrypt-against-key system,
+as well as professional ones, e.g. ECDSA's ridiculous $k$-reuse problem]
 [tell stories about serious cryptosystems broken in weird ways, eg TLS 1.0 side-channel attack]
 
 \section{Cryptography of Bitcoin 1: transactions and signatures. \label{txes}}
