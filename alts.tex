@@ -557,17 +557,85 @@ discourage miners from including transactions or discourage miners from publishi
 blocks quickly. Of course this list is not exhaustive.
 
 Even the simple-minded changes made to Bitcoin by typical alt-currencies have been
-enough to cause these problems.
+enough to cause these problems. Here are some examples:
 
-[TODO explore dangerous/bad ideas]
 \begin{itemize}
-\item Dependence on architecture (type width, floating point)
-\item Verification versus search speed for PoW
-\item Block frequency and size
-\item Update management (dogecoin's unplanned fork, lack of broadcast keys, etc)
+\item \emph{Architecture-dependent consensus.} In the early altcoin \texttt{solidcoin
+2.0}, difficulty changes were computed using floating-point math. This caused users
+with different systems to disagree on the correct difficulty, resulting in a badly
+broken consensus. (The original \texttt{solidcoin} had very rapid difficulty changes,
+which also caused the consensus to break --- this problem, followed by its inventor's
+belligerent and cartoonish response\footnote{For example, the proof-of-work in
+\texttt{solidcoin 2.0} involved hashing a personal diatribe written by its inventor
+about another message board user.}, was the original inspiration for this document.)
+
+\item \emph{Poor update management.} It's important to realize that every single
+piece of code which affects the validity of blocks is a piece of code which must
+be identical across all consensus nodes. Changing this code requires a carefully
+planned changeover, including public assertions from a majority of stakeholders
+that they will switch at the right time.
+
+As an extreme example of failing this, in January 2014, the meme-themed altcoin
+\texttt{dogecoin} pushed a small-seeming change in a point release of their reference
+client. This change affected the maximum output size of a \texttt{dogecoin}
+transaction allowed in a block. Since not all nodes updated, as soon as a transaction
+appeared which was valid under the new rules but not the old ones, the blockchain
+forked badly. In true \texttt{dogecoin} silliness, the users quickly jumped onto
+Reddit and started tipping each other madly, knowing that there was no consensus
+on who was tipping whom\footnote{The relevant thread is \url{http://www.reddit.com/r/dogecoin/comments/1ufl1e/much_concern_dogecoin_block_chain_has_split/cehm0yw}.}.
+
+Since \texttt{dogecoin} has a small and largely Reddit-based community, and since
+their users do not store much value in the currency, the mess was sorted out by
+the developers deciding a ``true history'' (i.e. by centralizing the consensus,
+at least at that point) and posting on Reddit that all users needed to update.
+
+As an aside, it should be noted that many cryptocurrencies have a mechanism for
+the developers of the reference client to send out emergency messages to the
+network. For \texttt{dogecoin} this was not possible since emergency messages
+must be digitally signed by the developers --- but when \texttt{dogecoin} copied
+the source code of \texttt{litecoin}, they forgot to set a new signing key!
+
+\item \emph{High block frequency.} A common change in altcoins is to increase
+the block frequency, due to a misunderstanding of the purpose and meaning of
+transaction confirmations. This increases the frequency of minor blockchain
+forks (which result in stale blocks and wasted mining power) and also increases
+the bandwidth and validation costs of non-mining nodes. Both of these tend to
+increase centralization.
+
+If the block frequency is very high, new blocks will be produced faster than
+blocks can be transmitted and verified. This destroys consensus since nodes
+are essentially always seeing competing blockchains in the past. (Remember
+that consensus time is measured by total blockchain difficulty, roughly,
+blockheight.) Therefore the first chain that they see will always appear
+longer than the others, and every node will have a different idea of the
+best chain.
+
+This happened to \texttt{feathercoin}, which had 60-second blocks. They were
+unable to achieve distributed consensus, so the network was changed to require
+developer signatures on all blocks. (They purchased the blocksigning code from
+Peercoin, whose problems with consensus are detailed in Section \ref{secpos}.
+[TODO citation needed]). Therefore their currency has a centralized consensus;
+since the point of proof-of-work is to achieve distributed consensus, mining
+on \texttt{feathercoin} is entirely pointless.
+
+\item \emph{Changing block size.} Large blocks are generally good for miners,
+who have powerful systems and seek transaction fees. In fact, miners with good
+systems may want large blocks because they are costly to verify, thus muscling
+out miners with weak systems for whom the verification time is a large cost.
+
+However, large blocks are bad for non-mining nodes, because they require more
+bandwidth, more verification effort and more storage. Determining the blocksize
+is therefore a tradeoff between having a high-capacity network and a well-decentralized
+one.
+
+Many people have suggested finding this balance by adaptively changing the blocksize.
+The problem with this is that all consensus data is ultimately determined by miners.
+Therefore they will push the blocksize larger and larger, since they are incentivized
+to do so, and the network will become centralized.
 \end{itemize}
 
-\paragraph{Hash function changes.} A popular and mostly-harmless change is to
+\subsection{Hash Function Changes}
+A popular and mostly-harmless change is to
 swap the \texttt{SHA256d} hash function used by Bitcoin for something else. This
 is covered in detail in \emph{ASICs and Decentralization FAQ} by the author,
 available at \url{https://download.wpsoftware.net/bitcoin/asic-faq.pdf}.
@@ -584,13 +652,18 @@ for individual miners to find secret shortcuts, making mining much cheaper for t
 and eventually forcing all other miners out of the market. This causes centralization.
 \item Simplicity: dedicated hardware is inevitable for a hash-grinding based
 proof-of-work. The more complex the algorithm, the more centralized this hardware
-development will be.
+development will be. The advantage from centralized hardware will likely also be
+greater.
 \end{itemize}
+It should be noted that \texttt{scrypt}, the most popular alternative to
+\texttt{SHA256d}, suffers from the first and last of these concerns, as
+well as being susceptible to a time-memory tradeoff, which is a special
+case of the third.
 
 \subsection{Difficulty Changes}
-[Frequency and clamping of difficulty changes]
+[TODO Frequency and clamping of difficulty changes]
 
-\subsection{Proof of Stake}
+\subsection{Proof of Stake\label{secpos}}
 
 Once we have the notion of cryptocurrency and cryptographically-unforgeable
 transfer of value, a natural extension of this idea is cryptographically-unforgeable
