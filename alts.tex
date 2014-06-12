@@ -13,7 +13,7 @@
 
 \title{A Treatise on Altcoins}
 \author{Andrew Poelstra}
-\date{Last update: 8 May 2014}
+\date{Last update: 12 June 2014}
 
 \begin{document}
 
@@ -146,13 +146,30 @@ label assigned to so many pointless projects on \texttt{sci.crypt}.
 
 \section{What are cryptocurrencies?}
 
-A \emph{cryptocurrency} is a cryptosystem designed to facilitate the transfer
-of value, by transferring scarce goods defined within the system itself. The
-prototypical example is Bitcoin, which transfers signing authority and maintains
-a global ledger of value associated to this authority. The primary innovation
-of Bitcoin was the creation of this ledger, which is updated and verified in
-a completely decentralized fashion, with all parties agreeing on the atomicity
-of transactions and their ordering in time.
+With the advent of modern cryptography, the idea that \emph{information} can be
+physically real --- and valuable --- has moved from the dingy halls of philosophy
+departments to the concrete world of business. We are all familiar with the
+economic activity enabled by secure communication: negotiations, contracts,
+transactions, sales and commands can be sent on the public Internet with no fear
+of forgery or interception. We are also familiar with the financial consequences
+when secret data is lost or stolen.
+
+Since the advent of cryptographic currency with Bitcoin in January 2009 \cite{satoshi}
+this notion of valuable information has been made concrete. It is
+possible to hold and exchange a \emph{fungible} store of value, using public
+communication media, with cryptographic rather than physical security preventing
+fraud or theft. Rather than saying ``this encryption key is worth \$10,000 because
+that's what it will cost us if its encrypted data is exposed'' one can say ``this
+key is worth \$10,000 but can be broken up, sending only \$20 of it to another
+party while keeping the rest''.
+
+A \emph{cryptocurrency} is such a cryptosystem, designed to facilitate the transfer
+of scarce goods defined within the system itself. The prototypical example is
+Bitcoin, which transfers signing authority and maintains a global ledger of value
+associated to this authority. The primary innovation of Bitcoin was the creation
+of this ledger, which is updated and verified in a completely decentralized
+fashion, with all parties agreeing on the atomicity of transactions and their
+ordering in time.
 
 Out of necessity, cryptocurrencies are enormous cryptosystems and contain many
 smaller cryptosystems as components. This makes them fearsomely complex, and
@@ -442,20 +459,89 @@ contains a simple scripting language
 
 \section{Cryptography of Bitcoin 2: distributed consensus.\label{consensus}}
 
-More than anything else, Bitcoin is a distributed consensus system. This
-means that it is composed of many disparate systems, each of which may
-leave or join at any time, who need to come to consensus on the chainstate.
-The way that Bitcoin accomplishes this is by a hash-based proof of
-work\footnote{Bitcoin's proof-of-work was invented by Adam Back as part
-of Hashcash, a precursor to Bitcoin. See Adam Back, \emph{Hashcash - A Denial
-of Service Counter-Measure}, technical report, August 2002.}. It is not
-clear whether this mechanism is a viable way to achieve distributed consensus
-in a decentralized way --- indeed, even the most na\"ive analysis involves
-economic incentive analysis, hardly a standard component of cryptographic
-proof --- but Bitcoin has been operating in a somewhat decentralized
-fashion for over five years, and this gives us hope.
+A \emph{distributed consensus}, as the term is used in Bitcoin, is a consensus (i.e.
+global agreement) between mutually-distrusting parties who lack identities and were
+not necessarily present at the time of system set up. We do allow and require the
+existence of a synchronous network, i.e. a network in which all valid data reaches
+all parties in a reasonable amount of time. We do not (and cannot, in an untrusted
+and physically dispersed network) assume that nodes agree on the precise timing or
+even time-ordering of messages on the network.
 
-Having said that, distributed consensus systems have new and catastrophic
+For the purposes of cryptocurrency, it is sufficient to achieve distributed consensus
+on the time-ordering of transactions (and nothing else). This implies consensus on
+the ``first transaction which moves these particular funds'', which assures the funds'
+new owner that the network recognizes them as such.
+
+The reason that this consensus is needed is called the \emph{double-spending problem}.
+That is, in any decentralized digital currency scheme there is the possibility that
+a spender might send the same money to two different people, and both spends would
+appear to be valid. Recipients therefore need a way to be assured that there are no
+conflicts, or that if there are conflicts, that the network will recognize their
+version as the correct one. A distributed consensus on transaction ordering achieves
+this: in the case of conflict, everyone agrees that the transaction which came first
+is valid while all others are not.
+
+(The other problems with digital currency, e.g. authentication and prevention of
+forgery, are comparatively easy and can be handled with traditional cryptography,
+as discussed elsewhere in this document.)
+
+\paragraph{Impossibility.}
+It can be mathematically proven that given only a synchronous network it is
+impossible to achieve distributed
+consensus in a cryptographically guaranteed way [cite impossibility result]. Bitcoin
+achieves the impossible by weakening its requirement from cryptographic guarantee
+to a mere economic one. That is, it introduces an opportunity cost from outside of
+the system (expenditure on computing time and energy) and provides rewards within
+the system, but only if consensus on an unbroken transaction history is maintained.
+
+This dependence on economic assumptions has two serious consequences:
+\begin{enumerate}
+\item Rigorous analysis is made much more difficult. Standard cryptographic proofs
+assume an attacker who does everything within his (clearly-defined) abilities to
+break a cryptosystem. Bitcoin, by contrast, requires analysis of the attacker's
+incentives, mixing well-defined mathematics with unclear economics, and introduces
+dependencies on the actual distribution of wealth and energy in the world.
+
+It is still unclear how to set this analysis on a solid foundation, and it is even
+unclear whether this distributed consensus mechanism even works. But Bitcoin has
+been operating in a somewhat decentralized fashion for over five years, and this
+gives us hope.
+
+\item Standard cryptographic proofs attempt to give honest parties an exponential
+advantage over dishonest ones. This is why we can produce digital signatures which
+can be honestly produced by RFID keytags while forging them would require more
+computing power than exists in the universe.
+
+However, with Bitcoin's distributed consensus, an honest party has only linear
+advantage over an attacker: it is exactly as easy to behave honestly (writing history)
+as it is to behave dishonestly (rewriting history). This is why Bitcoin is
+vulnerable to a so-called 51\% attack: as soon as a dishonest party is the majority,
+he has an advantage over the honest parties.
+\end{enumerate}
+
+\paragraph{Mechanisms.} The way that Bitcoin achieves distributed consensus is by
+a hash-based \emph{proof of work}\footnote{Bitcoin's proof-of-work was invented by Adam
+Back as part of Hashcash, a precursor to Bitcoin. See Adam Back, \emph{Hashcash --
+A Denial of Service Counter-Measure}, technical report, August 2002.}.
+Bitcoin provides a way to prove, for each candidate history, (a) that opportunity
+cost was forfeited, and (b) how much. This is a proof-of-work. Furthermore, the work
+proven includes that of all participants who worked on the history\footnote{In
+particular, the work done even by miners who don't find blocks is included, in
+exactly the same sense that gas molecules in a box contribute to its ambient
+temperature even if they don't happen to collide with the thermometer during
+measurement. This is not an analogy. The principles are the same. [cite yet-unwritten
+article about cryptographic thermodynamics]} [cite whatever of amiller's lottery
+stuff is public]. The consensus
+history is the one with most total work (at least as far as it has propagated
+through the network --- our weak synchronicity requirement means that the
+consensus on the most recent part of the history is uncertain). Since the
+consensus history is the only one containing spendable rewards for work done, this
+means (a) that provers have an incentive to work on the same history that other
+provers are, and (b) individual provers can't take control of the history because
+they need their peers' contribution.
+
+\subsection{Failure Modes}
+Distributed consensus systems have new and catastrophic
 failure modes which do not exist in ordinary systems. Even the simple-minded
 changes made to Bitcoin by typical alt-currencies have been enough to
 trigger these failure modes.
@@ -468,9 +554,162 @@ trigger these failure modes.
 \item Verification versus search speed for PoW
 \item PoW with different hardware requirements
 \item Block frequency and size
-\item Proof of stake
 \item Update management (dogecoin's unplanned fork, lack of broadcast keys, etc)
 \end{itemize}
+
+\subsection{Proof of Stake}
+
+Once we have the notion of cryptocurrency and cryptographically-unforgeable
+transfer of value, a natural extension of this idea is cryptographically-unforgeable
+proof of ownership. This is the idea behind \emph{proof of stake}. With cryptocurrency,
+it is possible for a proof-of-stake to not only prove ownership of a precise
+amount of currency, but also prove that this currency satisfies some property
+(say, it is locked and unspendable until some contract is satisfied).
+
+In particular, proven stake in a scarce and experimental cryptocurrency can be
+considered a proof of vested interest in the project's success. By proving stake
+which is time-locked, it can be used to prove interest in the project's continued
+(and sustainable) existence.
+
+A popular idea is to use proof-of-stake as a replacement for proof-of-work in
+producing a distributed consensus. As we will see, this idea is fundamentally
+flawed.
+
+\paragraph{Failures.} It is not well-advertised, but in fact there has never
+been an example of a cryptocurrency achieving distributed consensus by proof-of-stake.
+The prototypical proof-of-stake currency, Peercoin, depends on developer signatures
+to determine block validity: that is, its consensus is not distributed. The same
+fate has befallen other nominally-PoS currencies such as Blackcoin. In its initial
+incarnation, NXT was susceptible to a trivial stake-grinding attack (to be described
+below) and could not achieve any consensus. Since becoming closed-source while spamming
+technically-illiterate claims at popular conferences, it has fallen out of scope of
+this document.
+
+In fact, Peercoin was originally intended to drop the developer signatures once stake
+had been distributed. They attempted this once were immediately attacked by stake-grinding.
+They quietly removed their text showing intention to drop developer signatures and added
+a small PoW to make stake-grinding less trivial.
+
+Finally, it should be mentioned that developer-signed blocks are known in the PoS
+community as \emph{checkpoints}. This is a very misleading name because it is already
+used to describe an anti-denial-of-service measure of Bitcoin's peer-to-peer network;
+Bitcoin's checkpoints have nothing whatsoever to do with consensus. Therefore claims
+by PoS advocates that ``Bitcoin has checkpoints too'' are simply false.
+
+\paragraph{Distributed consensus.}
+Essentially, the idea behind using proof-of-stake as a consensus mechanism is to
+move the opportunity costs from outside the system to inside the system. The
+motivation for this is that using ``most proven work'' as a criteria for consensus
+creates an economic incentive to prove as much work as possible. For Bitcoin, which
+proves thermodynamic work (i.e. a certain amount of irreversible computation was
+done), there is a physical limit --- the Landauer limit --- which controls what
+``as much work as possible'' means\footnote{This is why we consider the proof of work to
+be a ``proof'', by the way: as long as our hash function is strong, the laws of
+physics prevent cheating.}. The result
+of this limit is a consensus which is
+extremely resource-intensive, producing entropy and driving us toward the heat death
+of the universe literally as fast as the laws of physics will allow\footnote{As an
+aside, it is interesting
+to note that rather than using a proof-of-work limited
+by the thermodynamic limit of computations per second, it should be possible to
+construct a proof-of-work which is limited by the bandwidth of the universe, i.e.,
+the uncertainty principle which puts a lower bound on the size of information storage
+along with the speed of light which puts bound on how fast information can travel from
+storage to storage. Since information transfer is reversible, the resultant proof of
+work should require large amounts of entropy production. This is the premise behind a
+\emph{memory-hard} proof-of-work, which is outside the scope of this article. See
+for example \cite{tromp}. There are many subtleties to this but the main
+concern with such a proof-of-work is that it shifts proving costs from marginal
+expenses to capital ones, which for a currency may cause economic incentives toward
+an oligarchy.}.
+By moving the opportunity costs into a human-designed cryptocurrency, it should be
+possible to construct laws which force much smaller limits on resource consumption.
+
+On a lower level, the way that proof of stake works is that currency holders are able
+to lock their currency for some amount of time, renting ``stake'' which is cryptographically
+verifiable. Then to extend the consensus history, rather than attaching a proof of work,
+each stakeholder digitally signs the extension. For reasons of practicality, typically
+a small random selection of stakeholders is chosen for each extension, and only a majority
+of the selection are required to give the extension validity. The chosen stakeholders are
+given a reward and after some time they are able to unlock their stake if they so desire.
+
+The idea is that rather than depending on the economic inviability of taking control of
+a history, stakeholders are incentivized to agree on each extension because (a) they are
+randomly chosen and therefore unlikely to be in collusion, and (b) even if they can
+collude, they do not want to undermine the system (e.g. by signing many conflicting
+histories) because they want to recover their stored value when their stake comes unlocked,
+and (c) they have limited capacity to cause havoc anyway, since for the above reasons the
+next random selection of stakeholders will probably choose only a single reasonable
+history to extend.
+
+\paragraph{Begging the question.}
+On a high level, by tying our stake to (temporarily) sacrificed cryptographic resources,
+we are begging the question of consensus on who is in possession of what resources.
+Proof of stake advocates attempt to evade this accusation by pointing out that false
+histories can only be created by stakeholders, and their power is limited to a short
+interval of time (the time when they are the chosen signers) during which they are incentivized
+not to do so. Therefore conflicting histories simply will not appear, and we can appeal to
+synchronicity of the network to obtain consensus on the one existing history.
+
+The problem with this argument is simple: the ``short interval of time'' is only
+short as measured by the consensus history, which only corresponds to a short interval
+in real time if there exists a consensus history. So we are still begging the question.
+In fact, if a stakeholder later irreversibly sells his stake for some resource outside
+the system (e.g. at an exchange), he no longer has incentive not to fork the history
+(or worse, expose his keys and let others fork the history) at the point in consensus
+time when he had control.
+
+This is a bit abstruse. We can illustrate it with an example. Suppose that at some
+early point in consensus time, a single person has the ability to extend history.
+(For example, they have control over every key which a new block is required to be
+signed by.) This may have happened organically, if this person's keys were chosen
+randomly by the stake-choosing algorithm, but it could also happen if this person
+tracks down the other keyholders and buys their keys. This may happen much later in
+consensus time (and real time), so there is no reason to believe these keyholders
+are still incentivized to keep their keys secret. Alternately, they may have revealed
+the keys through some honest mistake, the chances of which increase as time passes,
+backups are lost, etc.
+
+Now, we have a consensus history and an attacker who is able to fork it at some
+early time. To actually replace the entire consensus history, he needs to produce
+an alternate history, starting from his fork, which is longer than the existing
+history. But every block needs a new random selection of signers, so is this
+possible? The answer is absolutely yes: we have been using this word ``random'',
+but in fact we have required consensus on the set of signers (otherwise forks
+would trivially happen), so even a random selection must be seeded from past consensus
+history. Therefore, an attacker with enough past signing keys can modify the
+history he has direct control over, causing future signer selections to always
+happen in his favour. (It is likely he needs to ``grind'' through many choices
+of block before he finds one which lets him keep control of the signer selection.
+In effect, he has replaced proof-of-stake with proof-of-work, but a centralized
+one.)
+
+Further, this ability to control the future selection of stakeholders (and even
+the \emph{set} of stakeholders, by controlling which transactions appear in blocks)
+has serious consequences. This is because even without a deliberate attacker, the
+signers who extend the history at every point have an incentive to direct the history
+toward one in which they have more stake (and therefore more reward), which causes
+the system to trend toward centralization. They may do this by skewing the stake
+selection of future blocks, or more insidiously by censoring transactions which
+(may eventually) increase the set of stakeholders.
+
+\paragraph{Impossibility.}
+Intuitively, it seems impossible to obtain distributed consensus without provably
+consuming some resource outside of the system, but there is no rigorous argument
+for this claim.
+
+The problem ultimately comes down to what Greg Maxwell calls \emph{costless
+simulation}, and Andrew Miller calls \emph{nothing at stake}. If it is costless
+for signers to create valid blocks, then they are able to cheaply search the
+blockspace for blocks which direct the history in their favour. No matter how
+the network is designed to prevent a minority takeover, an attacker can direct
+history toward a present in which they \emph{are} the majority, as determined
+by the consensus, even if they are only a single party in physical space.
+
+It would therefore appear that whatever space we want to achieve distributed
+consensus in (in Bitcoin's case, it is the space of humans, which can we approximate
+by thermodynamic space since we are autonomous agents within that space), we
+need to consume resources \emph{in that space} to get the consensus.
 
 \section{Where do I go from here?}
 
@@ -496,15 +735,21 @@ enjoyable and engaging read.
 Regarding modern cryptography, many classic papers are available online. An
 incomplete and unordered list of essential reading is:
 \begin{itemize}
+\item The textbook \emph{Applied Cryptography}, Bruce Schneier.
 \item \emph{Probabilistic Encryption}, Goldwasser and Micali, 1984.
 \item \emph{A Public-Key Cryptosystem and a Signature Scheme Based on Discrete Logarithms}, ElGamal, 1985.
 \item \emph{The Decision Diffie–Hellman Problem}, Boneh, 1998.
 \item \emph{How to Prove Yourself: Practical Solutions to Identification and Signature Problems}, Fiat and Shamir, 1986.
 \end{itemize}
 It is also worthwhile to read the Wikipedia article on zero-knowledge proofs,
-which has plenty of citations, but is more clearly written than any of them \smiley.
+(which has plenty of citations, but is more clearly written than any of them).
 
 \section{Conclusion.}
+
+\begin{thebibliography}{9}
+\bibitem{satoshi} \url{https://www.bitcoin.org/bitcoin.pdf}
+\bibitem{tromp} \url{https://github.com/tromp/cuckoo}
+\end{thebibliography}
 
 \end{document}
 
