@@ -540,22 +540,55 @@ means (a) that provers have an incentive to work on the same history that other
 provers are, and (b) individual provers can't take control of the history because
 they need their peers' contribution.
 
-\subsection{Failure Modes}
-Distributed consensus systems have new and catastrophic
-failure modes which do not exist in ordinary systems. Even the simple-minded
-changes made to Bitcoin by typical alt-currencies have been enough to
-trigger these failure modes.
+\subsection{Failure Modes} Distributed consensus systems have new and catastrophic
+failure modes which do not exist in ordinary systems. The reason that consensus
+failure is catastrophic is that within a cryptocurrency, time itself is determined
+by consensus. If consensus is lost, at best time stops and the currency is unusable.
+At worst, there is disagreement on history and fraud becomes possible.
 
-[explain distributed consensus works, risk of forks, incentive issues, etc]
-[explore dangerous/bad ideas]
+Just as serious than a complete consensus failure is a partial consensus failure:
+if the network splits into two or more ``factions'' who disagree on history, then
+double-spending becomes easy by putting conflicting transactions into the various
+chains.
+
+Less serious than consensus failure is the risk of bad incentives, which may cause
+the consensus to become centralized, discourage non-miners from auditing transactions,
+discourage miners from including transactions or discourage miners from publishing
+blocks quickly. Of course this list is not exhaustive.
+
+Even the simple-minded changes made to Bitcoin by typical alt-currencies have been
+enough to cause these problems.
+
+[TODO explore dangerous/bad ideas]
 \begin{itemize}
 \item Dependence on architecture (type width, floating point)
-\item Speed and clamping of difficulty changes
 \item Verification versus search speed for PoW
-\item PoW with different hardware requirements
 \item Block frequency and size
 \item Update management (dogecoin's unplanned fork, lack of broadcast keys, etc)
 \end{itemize}
+
+\paragraph{Hash function changes.} A popular and mostly-harmless change is to
+swap the \texttt{SHA256d} hash function used by Bitcoin for something else. This
+is covered in detail in \emph{ASICs and Decentralization FAQ} by the author,
+available at \url{https://download.wpsoftware.net/bitcoin/asic-faq.pdf}.
+Essentially, the things to watch out for:
+\begin{itemize}
+\item Ease of verification: if it is costly to verify a proof-of-work, unpaid
+peer-to-peer nodes will stop (or at least stop validating blocks), weakening
+the network and introducing trust in the miners.
+\item Progress-freeness: if proof production has any notion of ``percent
+complete'', even a probabilistic one, then mining becomes a race and a disproportionate
+advantage is given to large mining operations. This encourages centralization.
+\item Optimization-freeness: if a proof-of-work is too complex, it may be possible
+for individual miners to find secret shortcuts, making mining much cheaper for them
+and eventually forcing all other miners out of the market. This causes centralization.
+\item Simplicity: dedicated hardware is inevitable for a hash-grinding based
+proof-of-work. The more complex the algorithm, the more centralized this hardware
+development will be.
+\end{itemize}
+
+\subsection{Difficulty Changes}
+[Frequency and clamping of difficulty changes]
 
 \subsection{Proof of Stake}
 
@@ -710,6 +743,31 @@ It would therefore appear that whatever space we want to achieve distributed
 consensus in (in Bitcoin's case, it is the space of humans, which can we approximate
 by thermodynamic space since we are autonomous agents within that space), we
 need to consume resources \emph{in that space} to get the consensus.
+
+\paragraph{Non-fundamental flaws.} Aside from the inability of proof-of-stake
+to produce a distributed consensus --- which can be evaded by using a ``hybrid''
+proof-of-work/proof-of-stake system for consensus or even denominating stake
+in some other currency which has a working consensus, such as Bitcoin --- there
+are incentive problems with using stake to determine block validity.
+
+For example, if stake distribution is determined by stake transactions within
+the chain, miners have an incentive to censor these transactions to keep their
+proportion of stake high. The can get around any quotas by simply mining their
+own stake transactions --- and if there are not enough honest stake transactions
+to meet the quota, the blockchain may halt.
+
+If blocks are invalid without sufficiently many (in all existing proof-of-stake
+systems, ``sufficiently many'' means one) signatures, this gives a signers an
+ability to refuse signatures until some demands are met, effectively taking
+blocks hostage. This can be used for direct attacks, or to discourage proof-of-work
+miners (or whoever is producing the actual consensus), weakening the currency's
+security.
+
+A simple question to ask, from Peter Todd, is \emph{can I use stake to get more
+stake?} If so, the above problems apply, the consensus will become increasingly
+decentralized, and there is potentially an economic trend toward a feudalism
+within the currency.
+
 
 \section{Where do I go from here?}
 
