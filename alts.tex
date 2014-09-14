@@ -9,15 +9,20 @@
 \usepackage{graphicx}
 \usepackage{mathptmx}
 \usepackage{hyperref}
+\usepackage{gitinfo}
 \usepackage[usenames,dvipsnames]{color}
 
 \title{A Treatise on Altcoins}
 \author{Andrew Poelstra}
-\date{Last update: 12 June 2014}
+\date{\gitAuthorDate{} (commit \texttt{\gitAbbrevHash)}}
 
 \begin{document}
 
 \maketitle
+
+\paragraph{Status.} This document is still under progress and is missing
+large sections. Existing text should be correct, so any bug reports are
+welcome at \texttt{apoelstra@wpsoftware.net}.
 
 \section{Preamble}
 
@@ -661,6 +666,7 @@ well as being susceptible to a time-memory tradeoff, which is a special
 case of the third.
 
 \subsection{Difficulty Changes}
+
 [TODO Frequency and clamping of difficulty changes]
 
 \subsection{Proof of Stake\label{secpos}}
