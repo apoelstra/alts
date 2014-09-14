@@ -667,7 +667,86 @@ case of the third.
 
 \subsection{Difficulty Changes}
 
-[TODO Frequency and clamping of difficulty changes]
+Another popular change to Bitcoin's design involves the difficulty adjustment. In
+Bitcoin, difficulty as adjusted according to a negative feedback loop which targets
+a block frequence of every ten minutes. These adjustments occur in discrete steps
+every 2016 blocks, and are clamped by a factor of four in both directions. The
+formula for adjusting the difficulty is simple:
+\[ \textnormal{new target} = \textnormal{old target}\times
+   \frac{\textnormal{timestamp of last block} - \textnormal{timestamp 2016 blocks ago}}{2016\times\textnormal{ten minutes}} \]
+where the \emph{target} is the numeric value that a blockhash must lie below for
+the block to be valid.
+
+We see that the difficulty change is entirely determined by the timestamps of two
+blocks. Furthermore, no validation of these timestamps is done --- there couldn't
+be, since if there were a globally recognized timestamp authority, we wouldn't
+need a blockchain! In other words, the difficulty is a parameter of the Bitcoin
+blockchain over which miners have free control\footnote{Things are not quite this
+bad --- nodes receiving blocks in real time check that the timestamps are roughly
+correct before relaying them, so miners with badly wrong timestamps will be unable
+to inform a majority of the network of their blocks --- but the fact remains that
+timestamps are not and cannot be authenticated, and are therefore forgeable.}.
+Since miners are a small portion of the overall network, and their incentives do
+not always line up with those of ordinary users, we need to keep this power in check;
+hence the requirement that (a) 2016 blocks go by between changes, ensuring that large
+difficulty changes do not happen by accident, and (b) the ``factor of four'' rule,
+which ensures that attackers cannot drastically change the block frequency through
+timestamp manipulation.
+
+On the other hand, if a significant portion of mining power were to disappear, the
+slow clamped difficulty changes could cause the block frequency to become much lower
+than ten minutes for long periods of time. This scepter has motivated some altcoin
+developers to change the adjustment rules, but as we will see, this introduces
+significant risk --- for a benefit that is only visible during a hashpower exodus,
+a time when the network is likely to have few users, and be prone to other attacks
+anyway.
+
+Some common changes are:
+\begin{enumerate}
+\item Weakening or even removing the ``factor of four'' clamping; this is dangerous
+since it gives miners much more control over the block rate. By increasing the block
+rate they can give themselves significant advantage by being the first to know about
+each new block; by decreasing it they can push other miners off the network by
+increasing the variance of their rewards.
+
+\item Increasing the frequency of difficulty changes; this is dangerous because it
+effectively weakens the clamping (if the difficulty can change by a factor of four
+every 504 blocks, it can change by a factor of 256 every 2016 blocks), and also lets
+attackers operate in a ``drive-by'' fashion where they do not need to control large
+portions of hashpower for very long in order to execute attacks.
+
+For example, \texttt{terracoin} made both of these mistakes, and was destroyed by a
+difficulty-manipulating attack\footnote{See \url{https://bitcointalk.org/index.php?topic=261986.0}
+for discussion of this event.}.
+
+\item Smoothing out the difficulty changes, \emph{e.g.} by retargeting every block
+but using the blocktimes of the last 2016 blocks each time; by itself, this has
+basically no effect on anything. However, to maintain a factor-of-four clamping
+over 16 blocks, the difficulty change per block must be restricted to a factor of
+$4^{1/2016} = 1.00069$. To the best of my knowledge, no existing altcoin has such
+a restrictive bound, so the effective clamping is weakened and the chain is subject
+to the above attacks.
+
+\item Introducing some complex adaptive scheme such as
+\href{https://bitcoin.stackexchange.com/questions/21730/how-does-the-kimoto-gravity-well-regulate-difficulty}
+{Kimoto Gravity Well (KGW)}; this is essentially an obfuscated way to introduce some or
+all of the above changes, and comes with the same risks. It also introduces complexity
+into consensus code, offering more opportunity for different implementations to do
+subtly different things and forking the network. Typically these schemes are also
+computationally expensive and therefore make it much more expensive to determine the
+longest chain by proof-of-work alone, putting a disproportionate burden on light
+nodes.
+
+For example, \texttt{megacoin} and \texttt{vertcoin} use KGW; these altcoins have not
+suffered timestamp-manipulation attacks, but their scalability has suffered as a result.
+\end{enumerate}
+
+It is worth reiterating that a significant drop in hashpower is likely to mean that
+an altcoin is being deserted and that its block frequency is simply no longer relevant
+to many users. Introducing risk and complexity to handle this specific case is simply
+not a reasonable thing to do: under normal circumstances, the changes will have no
+effect, and in event of an attack, difficulty changes simply increase the likelihood
+and degree of the attack's success.
 
 \subsection{Proof of Stake\label{secpos}}
 
