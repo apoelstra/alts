@@ -468,8 +468,12 @@ contains a simple scripting language
 A \emph{distributed consensus}, as the term is used in Bitcoin, is a consensus (i.e.
 global agreement) between mutually-distrusting parties who lack identities and were
 not necessarily present at the time of system set up. We do allow and require the
-existence of a synchronous network, i.e. a network in which all valid data reaches
-all parties in a reasonable amount of time. We do not (and cannot, in an untrusted
+existence of a ``weakly synchronous network''. By this we a network in which all
+valid data reaches all parties in a reasonable amount of time\footnote{By
+``reasonable'' we mean that blocks propagate to the entire network before the
+next block comes in, on average; otherwise the network may not converge. For
+efficiency reasons, we actually want propagation to happen much faster than
+blocks are produced, but this is not strictly necessary.}. We do not (and cannot, in an untrusted
 and physically dispersed network) assume that nodes agree on the precise timing or
 even time-ordering of messages on the network.
 
@@ -492,9 +496,9 @@ forgery, are comparatively easy and can be handled with traditional cryptography
 as discussed elsewhere in this document.)
 
 \paragraph{Impossibility.}
-It can be mathematically proven that given only a synchronous network it is
+It can be mathematically proven that given only an asynchronous network it is
 impossible to achieve distributed
-consensus in a cryptographically guaranteed way [cite impossibility result]. Bitcoin
+consensus in a cryptographically guaranteed way \cite{fischer+lynch+paterson1985}. Bitcoin
 achieves the impossible by weakening its requirement from cryptographic guarantee
 to a mere economic one. That is, it introduces an opportunity cost from outside of
 the system (expenditure on computing time and energy) and provides rewards within
