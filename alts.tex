@@ -467,13 +467,13 @@ contains a simple scripting language
 
 A \emph{distributed consensus}, as the term is used in Bitcoin, is a consensus (i.e.
 global agreement) between mutually-distrusting parties who lack identities and were
-not necessarily present at the time of system set up. We do allow and require the
-existence of a ``weakly synchronous network'': a network in which all
-valid data reaches all parties in a reasonable amount of time\footnote{By
-``reasonable'' we mean that blocks propagate to the entire network before the
-next block comes in, on average; otherwise the network may not converge. For
-efficiency reasons, we actually want propagation to happen much faster than
-blocks are produced, but this is not strictly necessary.}. We do not (and cannot, in an untrusted
+not necessarily present at the time of system set up. We do allow and require
+\emph{synchronous communication}; that is, there is some maximum duration $\Delta$
+after which all valid broadcasted data reaches all parties\footnote{To obtain a
+convergent network, we require only that blocks propagate to the entire network
+before the next block comes in, on average. For efficiency reasons, we actually
+want propagation to happen much faster than blocks are produced, and this is what
+occurs in practice.}\cite{miller+laviola2014}. We do not (and cannot, in an untrusted
 and physically dispersed network) assume that nodes agree on the precise timing or
 even time-ordering of messages on the network.
 
@@ -495,12 +495,15 @@ is valid while all others are not.
 forgery, are comparatively easy and can be handled with traditional cryptography,
 as discussed elsewhere in this document.)
 
-\paragraph{Impossibility.}
-It can be mathematically proven that given only an asynchronous network it is
-impossible to achieve distributed
-consensus in a cryptographically guaranteed way \cite{fischer+lynch+paterson1985}. Bitcoin
-achieves the impossible by weakening its requirement from cryptographic guarantee
-to a mere economic one. That is, it introduces an opportunity cost from outside of
+\paragraph{Economic Assumptions.} Our assumptions on the topology of the Bitcoin
+network make it well-suited for distributed consensus. For example, it easily
+evades the classical FLP impossibility result\cite{fischer+lynch+paterson1985}
+both by being nondeterministic and by having synchronous communication. However,
+because participants in Bitcoin are anonymous and do not have registered identities,
+distributed consensus is in fact a difficult problem (\emph{c.f.} the discussion
+in \cite{miller+laviola2014}). Bitcoin is the first apparent solution to this
+problem, and achieves this only by weakening its requirement from a cryptographic guarantee
+to a mere economic one. More specifically, it introduces an opportunity cost from outside of
 the system (expenditure on computing time and energy) and provides rewards within
 the system, but only if consensus on an unbroken transaction history is maintained.
 
