@@ -289,8 +289,8 @@ utxo set. Then that output's script is concatenated to the input's
 script, and the concatenated script is run using the Script Evaluation
 algorithm. If the algorithm accepts, the transaction is valid.
 
-Further, the total value of outputs must be greater than or equal to
-the total value of the inputs (input values are defined as the values
+Further, the total value of inputs must be greater than or equal to
+the total value of the outputs (input values are defined as the values
 of their referenced outputs). If the input total is strictly greater
 than the output total, the difference is called a \emph{transaction fee}
 and is recaptured by the network.
